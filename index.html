@@ -3,13 +3,19 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kartu NUPTK Interaktif</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background: #f5f5f5;
+      margin: 0;
       padding: 20px;
     }
 
@@ -19,6 +25,9 @@
       gap: 24px;
       justify-content: flex-start;
       align-items: flex-start;
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
     }
 
     .preview-cards {
@@ -30,6 +39,7 @@
       align-items: center;
       flex: 1 1 540px;
       min-width: 540px;
+      max-width: 100%;
     }
 
     .card-shell {
@@ -41,7 +51,7 @@
     .form {
       width: min(400px, 100%);
       max-width: 100%;
-      flex: 1 1 100px;
+      flex: 0 0 400px;
       background: #fff;
       padding: 15px;
       border-radius: 8px;
@@ -73,6 +83,16 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .buttons label {
+      flex: 1 0 100%;
+      margin-top: 0;
+    }
+
+    .buttons input {
+      flex: 1 1 220px;
+      min-width: 0;
     }
 
     .buttons button {
@@ -325,6 +345,44 @@
         width: 100%;
       }
     }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+      .container {
+        gap: 16px;
+      }
+
+      .form {
+        flex: 1 1 100%;
+        width: 100%;
+        max-height: none;
+        padding: 12px;
+      }
+
+      .form input,
+      .form select,
+      .buttons button {
+        min-height: 42px;
+        font-size: 16px;
+      }
+
+      .buttons {
+        gap: 8px;
+      }
+
+      .buttons button {
+        flex: 1 1 100%;
+      }
+
+      .preview-cards {
+        gap: 14px;
+        align-items: center;
+        overflow: hidden;
+      }
+    }
   </style>
 </head>
 
@@ -477,7 +535,7 @@
     }
 
     function formatTanggalIndo(tanggalStr) {
-      if (!tanggalStr) return "";
+      if (!tanggalStr) return "-";
       const bulanIndo = [
         "Januari",
         "Februari",
@@ -577,7 +635,11 @@
 
       const baseWidth = 540;
       const baseHeight = 310;
-      const scale = Math.min(width / baseWidth, height / baseHeight);
+      const selectedScale = Math.min(width / baseWidth, height / baseHeight);
+      const preview = document.querySelector(".preview-cards");
+      const availableWidth = preview ? preview.clientWidth : window.innerWidth;
+      const responsiveScale = Math.min(1, (availableWidth - 4) / baseWidth);
+      const scale = Math.min(selectedScale, responsiveScale);
 
       document.querySelectorAll(".card-shell").forEach((shell) => {
         shell.style.width = baseWidth * scale + "px";
@@ -768,6 +830,10 @@
     };
 
     document.getElementById("ukuranKartu").addEventListener("change", () => {
+      ubahUkuranKartu();
+    });
+
+    window.addEventListener("resize", () => {
       ubahUkuranKartu();
     });
   </script>
