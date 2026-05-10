@@ -455,15 +455,15 @@
           <div class="data">
             <strong>
               <p>
-                <span class="label">NUPTK</span>: <span id="nuptk">-</span>
+                <span class="label">NUPTK</span>: <span id="nuptk"></span>
               </p>
             </strong>
-            <p><span class="label">Nama</span>: <span id="nama">-</span></p>
-            <p><span class="label">Tempat</span>: <span id="tempat">-</span></p>
+            <p><span class="label">Nama</span>: <span id="nama"></span></p>
+            <p><span class="label">Tempat</span>: <span id="tempat"></span></p>
             <p>
-              <span class="label">Tgl Lahir</span>: <span id="tanggal">-</span>
+              <span class="label">Tgl Lahir</span>: <span id="tanggal"></span>
             </p>
-            <p><span class="label">Gender</span>: <span id="gender">-</span></p>
+            <p><span class="label">Gender</span>: <span id="gender"></span></p>
           </div>
 
           <img class="qr-code" id="qrCode"
@@ -501,6 +501,14 @@
   </div>
 
   <script>
+    const qrCodeTemplateSrc = document.getElementById("qrCode").src;
+
+    function adaDataKartuUntukQr(nuptk, nama, tempat, tanggal, gender) {
+      return [nuptk, nama, tempat, tanggal, gender].some(
+        (v) => v && String(v).trim().length > 0
+      );
+    }
+
     // function updateCard(){
     //   const nuptk = document.getElementById('inputNuptk').value;
     //   const nama = document.getElementById('inputNama').value;
@@ -535,7 +543,7 @@
     }
 
     function formatTanggalIndo(tanggalStr) {
-      if (!tanggalStr) return "-";
+      if (!tanggalStr || !String(tanggalStr).trim()) return "";
       const bulanIndo = [
         "Januari",
         "Februari",
@@ -556,12 +564,17 @@
     }
 
     function updateQRCode(nuptk, nama, tempat, tanggal, gender) {
+      const el = document.getElementById("qrCode");
+      if (!adaDataKartuUntukQr(nuptk, nama, tempat, tanggal, gender)) {
+        el.src = qrCodeTemplateSrc;
+        return;
+      }
       const qrData = `NUPTK: ${nuptk}\nNama: ${nama}\nTempat Lahir: ${tempat}\nTgl Lahir: ${tanggal}\nJenis Kelamin: ${gender}`;
       // Menambahkan margin agar QR code punya padding putih di sekelilingnya
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=50&data=${encodeURIComponent(
         qrData
       )}`;
-      document.getElementById("qrCode").src = qrUrl;
+      el.src = qrUrl;
     }
 
     function loadFoto(event) {
@@ -785,7 +798,13 @@
     }
 
     function tampilkanDataDariLocalStorage() {
-      const data = JSON.parse(localStorage.getItem("dataKartu"));
+      const raw = localStorage.getItem("dataKartu");
+      let data = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        data = null;
+      }
       if (data) {
         document.getElementById("inputNuptk").value = data.nuptk;
         document.getElementById("inputNama").value = data.nama;
