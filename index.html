@@ -408,8 +408,8 @@
       </select>
       <!-- <input type="text" id="inputGender" oninput="updateCard()"> -->
       <label>Ukuran Kartu</label>
-      <select id="ukuranKartu" onchange="ubahUkuranKartu()">
-        <option value="540x310">Standar</option>
+      <select id="ukuranKartu">
+        <option value="520x298">Standar</option>
         <option value="600x400">Besar</option>
         <option value="320x200" selected>Kecil (KTP)</option>
       </select>
@@ -629,17 +629,27 @@
     }
 
     function ubahUkuranKartu() {
-      const ukuran = document.getElementById("ukuranKartu").value.split("x");
-      const width = ukuran[0];
-      const height = ukuran[1];
+      const rawUkuran = document.getElementById("ukuranKartu").value;
+      const ukuran = rawUkuran.split("x");
+      const width = Number(ukuran[0]);
+      const height = Number(ukuran[1]);
 
       const baseWidth = 540;
       const baseHeight = 310;
       const selectedScale = Math.min(width / baseWidth, height / baseHeight);
       const preview = document.querySelector(".preview-cards");
       const availableWidth = preview ? preview.clientWidth : window.innerWidth;
-      const responsiveScale = Math.min(1, (availableWidth - 4) / baseWidth);
-      const scale = Math.min(selectedScale, responsiveScale);
+      /* Muat lebar panel pratinjau tanpa membatasi skala ke 1 — supaya "Besar"
+         benar-benar lebih besar dari "Standar", dan "Standar" mengikuti rasio proporsional. */
+      const maxScaleForViewport = Math.max(
+        0.12,
+        (availableWidth - 8) / baseWidth
+      );
+      const scale = Math.min(selectedScale, maxScaleForViewport);
+
+      let kelasUkuran = "standar";
+      if (rawUkuran === "320x200") kelasUkuran = "kecil";
+      else if (rawUkuran === "600x400") kelasUkuran = "besar";
 
       document.querySelectorAll(".card-shell").forEach((shell) => {
         shell.style.width = baseWidth * scale + "px";
@@ -648,7 +658,7 @@
 
       document.querySelectorAll(".card").forEach((card) => {
         card.classList.remove("standar", "besar", "kecil");
-        card.classList.add("standar");
+        card.classList.add(kelasUkuran);
         card.style.width = baseWidth + "px";
         card.style.height = baseHeight + "px";
         card.style.setProperty("--card-scale", scale);
